@@ -48,7 +48,7 @@ func (r *authRepository) GetOTP(ctx context.Context, phone string) string {
 	key := "otp:" + phone
 	res, err := r.redisConnection.Get(ctx, key).Result()
 	if err == redis.Nil {
-		panic(utils.PanicMessage{})
+		panic(utils.PanicMessage{MessageKey: 3})
 	} else if err != nil {
 		panic(err)
 	}
