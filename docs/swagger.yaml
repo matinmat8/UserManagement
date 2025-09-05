@@ -1,0 +1,152 @@
+basePath: /api/v1
+definitions:
+  requests.LoginRequest:
+    properties:
+      OTPCode:
+        minLength: 6
+        type: string
+      phoneNumber:
+        type: string
+    required:
+    - OTPCode
+    - phoneNumber
+    type: object
+  requests.OTPRequest:
+    properties:
+      phoneNumber:
+        type: string
+    required:
+    - phoneNumber
+    type: object
+host: localhost:8000
+info:
+  contact: {}
+  description: This is a sample authentication service with OTP + JWT in Go + Gin.
+  title: Authentication API
+  version: "1.0"
+paths:
+  /api/v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Verify OTP, create user if not exists, and return JWT tokens
+      parameters:
+      - description: Login request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login with phone number and OTP
+      tags:
+      - Auth
+  /api/v1/auth/profile:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve user profile by query parameters
+      parameters:
+      - description: Phone number
+        in: query
+        name: phone
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user profile
+      tags:
+      - Auth
+  /api/v1/auth/send/otp:
+    post:
+      consumes:
+      - application/json
+      description: Generates and sends OTP, stores it in Redis
+      parameters:
+      - description: OTP request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/requests.OTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Send OTP code to phone number
+      tags:
+      - Auth
+  /api/v1/auth/users:
+    get:
+      consumes:
+      - application/json
+      description: Paginated list of users with optional phone search
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: Number of users per page
+        in: query
+        name: page_size
+        required: true
+        type: integer
+      - description: Search by phone
+        in: query
+        name: phone
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List users
+      tags:
+      - Auth
+swagger: "2.0"
