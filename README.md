@@ -70,3 +70,45 @@ The app uses the following environment variables (configured in docker-compose.y
 ```docker exec -it redis redis-cli```
 
 
+
+---
+
+## ⚡ Error Handling
+
+This project uses a **centralized error handling middleware** with Gin.  
+Instead of returning raw errors, we **panic with a custom `PanicMessage` struct**. The middleware recovers from panics and translates them into meaningful JSON responses.
+
+### 🔹 How it Works
+1. Each part of the application (repositories, services, controllers) can `panic(utils.PanicMessage{MessageKey: <key>})` when something goes wrong.
+2. The middleware (`middleware/ErrorHandling.go`) intercepts the panic using `recover()`.
+3. It looks up the error message in a **message template map** (`pkg/templates`).
+4. A structured JSON response is returned to the client with the correct HTTP status code and user-friendly message.
+5. The error is also logged with depth information using `utils/logger`.
+
+### 🔹 Example Response
+If OTP was already sent, the response might look like:
+
+```json
+{
+  "fa_message": "کد یکبار مصرف قبلاً ارسال شده است",
+  "en_message": "OTP already sent"
+}
+```
+🔹 Why This is Useful
+- Keeps controller code clean (no repetitive if err != nil handling everywhere).
+- Ensures consistent error messages across the whole project.
+- Makes it easier to log and debug errors.
+- Provides user-friendly API responses instead of raw stack traces.
+
+🗂 File Logger (Zerolog + Lumberjack)
+
+Logging is handled by a combination of:
+
+- Zerolog → High-performance structured logging.
+- Lumberjack  → Log file rotation & compression.
+
+Features
+- Logs are written to logs/auth.log.
+- Each file rotates at 200 MB.
+- Old logs are compressed automatically.
+- Errors are written with the file name, line number, and details for easier debugging.
