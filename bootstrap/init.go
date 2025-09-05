@@ -18,13 +18,13 @@ type AppContainer struct {
 func InitAppContainer() *AppContainer {
 	redisClient := db.RedisClient()
 
+	limiter := redis_rate.NewLimiter(redisClient)
+
 	//jwtAuth := jwt.Jwt{}
 
 	authRepo := repositories.NewAuthRepository(redisClient)
-	authService := services.NewAuthService(authRepo)
+	authService := services.NewAuthService(authRepo, limiter)
 	authController := v1.NewAuthAPI(authService)
-
-	limiter := redis_rate.NewLimiter(redisClient)
 
 	return &AppContainer{
 		Redis:   redisClient,

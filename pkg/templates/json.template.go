@@ -13,4 +13,6 @@ var MessageTemplates = map[int]struct {
 	2: {400, gin.H{"en_message": "OTP code has expired", "fa_message": "کد تایید منقضی شده است"}},
 	3: {400, gin.H{"en_message": "OTP code is wrong", "fa_message": "کد تایید نادرست است"}},
 	4: {400, gin.H{"en_message": "No user found with this phone number", "fa_message": "کاربری با این شماره تماس پیدا نشد"}},
+	5: {400, gin.H{"en_message": "The OTP code has sent before", "fa_message": "کد تایید از قبل ارسال شده است"}},
+	6: {400, gin.H{"en_message": "Too many requests. Please try again later.", "fa_message": "درخواست بیش از حد لطفا چند لحظه بعد دوباره تلاش کنید"}},
 }

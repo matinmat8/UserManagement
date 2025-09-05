@@ -40,7 +40,7 @@ func (r *authRepository) SetOTP(ctx context.Context, phone string, code int, ttl
 		panic(err)
 	}
 	if !set {
-		panic("OTP already sent")
+		panic(utils.PanicMessage{MessageKey: 5})
 	}
 }
 

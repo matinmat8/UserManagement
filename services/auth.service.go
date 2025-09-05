@@ -6,6 +6,7 @@ import (
 	"authentication/utils"
 	"context"
 	"fmt"
+	"github.com/go-redis/redis_rate/v10"
 	"time"
 )
 
@@ -18,30 +19,62 @@ type AuthService interface {
 
 type authService struct {
 	authRepository repositories.AuthRepository
+	limiter        *redis_rate.Limiter
 }
 
-func NewAuthService(authRepository repositories.AuthRepository) AuthService {
-	return &authService{authRepository: authRepository}
+func NewAuthService(authRepository repositories.AuthRepository, limiter *redis_rate.Limiter) AuthService {
+	return &authService{
+		authRepository: authRepository,
+		limiter:        limiter,
+	}
 }
 
 func (s *authService) SendOTPCode(otpRequest requests.OTPRequest, ctx context.Context) {
+	key := "otp_request:" + otpRequest.PhoneNumber
+	res, err := s.limiter.Allow(ctx, key, redis_rate.Limit{
+		Rate:   3,
+		Period: 10 * time.Minute,
+		Burst:  3,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	if res.Allowed == 0 {
+		panic(utils.PanicMessage{MessageKey: 6})
+	}
+
+	// Generate OTP
 	code := utils.Generate6DigitCode()
 	s.authRepository.SetOTP(ctx, otpRequest.PhoneNumber, code, 2*time.Minute)
 }
 
 func (s *authService) Login(loginRequest requests.LoginRequest, ctx context.Context) map[string]string {
+	key := "login:" + loginRequest.PhoneNumber
+
 	otp := s.authRepository.GetOTP(ctx, loginRequest.PhoneNumber)
 	if otp != loginRequest.OTPCode {
-		panic(utils.PanicMessage{MessageKey: 3})
+		res, err := s.limiter.Allow(ctx, key, redis_rate.Limit{
+			Rate:   3,
+			Period: 10 * time.Minute,
+			Burst:  3,
+		})
+		fmt.Println(res)
+		if err != nil {
+			panic(utils.PanicMessage{0, &err})
+		}
+		if res.Allowed == 0 {
+			panic(utils.PanicMessage{MessageKey: 6})
+		}
+
+		panic(utils.PanicMessage{MessageKey: 3}) // "Invalid OTP"
 	}
 
 	var user map[string]string
 	exists := s.authRepository.UserExists(ctx, loginRequest.PhoneNumber)
-	fmt.Println(exists)
 	if exists {
 		user = s.authRepository.GetUser(ctx, loginRequest.PhoneNumber)
 	} else {
-		fmt.Println("I'm creating a user")
 		user = s.authRepository.CreateUser(ctx, loginRequest.PhoneNumber)
 	}
 
