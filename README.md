@@ -70,10 +70,58 @@ The app uses the following environment variables (configured in docker-compose.y
 ```docker exec -it redis redis-cli```
 
 
+---
+
+2. How to run it locally
+
+1- Install Redis locally (if not installed):
+
+- Windows:
+You can install Redis for Windows. After installation, run it with:
+```
+redis-server
+```
+- Linux/macOS:
+```
+sudo apt install redis-server   # Linux
+brew install redis              # macOS
+redis-server
+```
+2- Verify Redis is running:
+```
+redis-cli ping
+```
+If it returns PONG, Redis is running.
+
+3- Set environment variables (so your Go app can read them):
+- Linux/macOS:
+```
+export REDIS_HOST=localhost
+export REDIS_PORT=6379
+```
+- Windows (PowerShell):
+```
+setx REDIS_HOST "localhost"
+setx REDIS_PORT "6379"
+```
+4- Run your Go app locally:
+```
+go run main.go
+```
+Your RedisClient function will read the environment variables and connect to the local Redis instance.
 
 
+3. Optional – Hardcode for local development
+- If you want to avoid environment variables during local testing, you can temporarily change your code:
+```
+rdb := redis.NewClient(&redis.Options{
+    Addr: "localhost:6379",
+})
 
+```
 
+Later, when deploying to Docker or production, you can switch back to environment variables.
+``` 
 
 
 
