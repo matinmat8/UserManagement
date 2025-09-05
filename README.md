@@ -72,9 +72,9 @@ The app uses the following environment variables (configured in docker-compose.y
 
 ---
 
-2. How to run it locally
+## 2. How to run it locally
 
-1- Install Redis locally (if not installed):
+## 1- Install Redis locally (if not installed):
 
 - Windows:
 You can install Redis for Windows. After installation, run it with:
@@ -119,13 +119,7 @@ rdb := redis.NewClient(&redis.Options{
 })
 
 ```
-
 Later, when deploying to Docker or production, you can switch back to environment variables.
-``` 
-
-
-
-
 
 ---
 
