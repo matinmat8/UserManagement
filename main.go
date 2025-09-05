@@ -26,7 +26,7 @@ func main() {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	gin.SetMode(gin.DebugMode)
-	err := r.Run(":8000")
+	err := r.Run(":8080")
 	if err != nil {
 		return
 	}
