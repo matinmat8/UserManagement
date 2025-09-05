@@ -122,6 +122,17 @@ rdb := redis.NewClient(&redis.Options{
 Later, when deploying to Docker or production, you can switch back to environment variables.
 
 ---
+## Why Redis?
+
+We chose Redis as our primary storage for OTPs and user session data for several reasons:
+1- Simplicity – Using Redis allowed us to quickly store and retrieve ephemeral data like OTP codes and refresh tokens without setting up a full database schema.
+
+2- Speed – Redis is an in-memory database, which ensures extremely fast read/write operations, making it ideal for handling time-sensitive data like OTPs.
+
+3- Ease of development – By storing users and OTPs in Redis, we could focus on building the authentication logic and services faster without dealing with relational database migrations or complex queries.
+
+
+---
 
 
 ## ⚡ Error Handling
@@ -180,3 +191,12 @@ logger.LogErrorWithDepth(eventData)
 - Developers: Detailed error tracking in logs.
 - Clients: Clean, user-friendly error messages.
 - System: Stability (no crashes from panics).
+
+
+---
+
+### About Common Utilities
+
+Some common utilities such as token generation, OTP creation, or logging were intended to be moved to a shared/common library to allow reuse across multiple services. This approach is generally better for maintainability and consistency.
+
+However, due to time constraints, these utilities were kept inside the main service for simplicity. In a future iteration, refactoring them into a dedicated common library would improve code reuse and organization.
