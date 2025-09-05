@@ -69,6 +69,39 @@ The app uses the following environment variables (configured in docker-compose.y
 - Enter Redis CLI:
 ```docker exec -it redis redis-cli```
 
+
+
+
+
+
+
+
+
+
+
+---
+
+
+## ⚡ Error Handling
+This project uses a **centralized error handling middleware** with Gin.  
+Instead of returning raw errors, we **panic with a custom `PanicMessage` struct**. The middleware recovers from panics and translates them into meaningful JSON responses.
+
+### 🔹 How it Works
+
+1. Each part of the application (repositories, services, controllers) can `panic(utils.PanicMessage{MessageKey: <key>})` when something goes wrong.
+2. The middleware (`middleware/ErrorHandling.go`) intercepts the panic using `recover()`.
+3. It looks up the error message in a **message template map** (`pkg/templates`).
+4. A structured JSON response is returned to the client with the correct HTTP status code and user-friendly message.
+5. The error is also logged with depth information using `utils/logger`.
+
+### 🔹 Example Response
+If OTP was already sent, the response might look like:
+```json
+{
+  "fa_message": "کد یکبار مصرف قبلاً ارسال شده است",
+  "en_message": "OTP already sent"
+```
+
 Example log entry:
 ``` ERROR File: middleware/error.go, Line: 42, ErrorMessage: "An Error Occurred", ErrorDetails: "sql: no rows in result set" ```
 
