@@ -5,7 +5,6 @@ import (
 	"authentication/requests"
 	"authentication/utils"
 	"context"
-	"fmt"
 	"github.com/go-redis/redis_rate/v10"
 	"time"
 )
@@ -40,7 +39,7 @@ func (s *authService) SendOTPCode(otpRequest requests.OTPRequest, ctx context.Co
 		panic(err)
 	}
 
-	if res.Allowed == 0 {
+	if res.Remaining == 0 {
 		panic(utils.PanicMessage{MessageKey: 6})
 	}
 
@@ -52,21 +51,20 @@ func (s *authService) SendOTPCode(otpRequest requests.OTPRequest, ctx context.Co
 func (s *authService) Login(loginRequest requests.LoginRequest, ctx context.Context) map[string]string {
 	key := "login:" + loginRequest.PhoneNumber
 
+	res, err := s.limiter.Allow(ctx, key, redis_rate.Limit{
+		Rate:   3,
+		Period: 10 * time.Minute,
+		Burst:  3,
+	})
+	if err != nil {
+		panic(utils.PanicMessage{0, &err})
+	}
+	if res.Remaining == 0 {
+		panic(utils.PanicMessage{MessageKey: 6})
+	}
+
 	otp := s.authRepository.GetOTP(ctx, loginRequest.PhoneNumber)
 	if otp != loginRequest.OTPCode {
-		res, err := s.limiter.Allow(ctx, key, redis_rate.Limit{
-			Rate:   3,
-			Period: 10 * time.Minute,
-			Burst:  3,
-		})
-		fmt.Println(res)
-		if err != nil {
-			panic(utils.PanicMessage{0, &err})
-		}
-		if res.Allowed == 0 {
-			panic(utils.PanicMessage{MessageKey: 6})
-		}
-
 		panic(utils.PanicMessage{MessageKey: 3}) // "Invalid OTP"
 	}
 
