@@ -102,6 +102,20 @@ If OTP was already sent, the response might look like:
   "en_message": "OTP already sent"
 ```
 
+---
+
+🗂 File Logger (Zerolog + Lumberjack)
+Logging is handled by a combination of:
+ - Zerolog → High-performance structured logging.
+ - Lumberjack → Log file rotation & compression.
+
+Features
+- Logs are written to logs/auth.log.
+- Each file rotates at 200 MB.
+- Old logs are compressed automatically.
+- Errors are written with the file name, line number, and details for easier debugging.
+
+
 Example log entry:
 ``` ERROR File: middleware/error.go, Line: 42, ErrorMessage: "An Error Occurred", ErrorDetails: "sql: no rows in result set" ```
 
